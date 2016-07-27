@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>elevated</ProjectName>
+    <ProjectGuid>{8A1B99FC-9799-4029-993C-6D4A6AEEFE67}</ProjectGuid>
+    <RootNamespace>Asm07Intro</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.50727.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>exe\$(Configuration)\</OutDir>
+    <IntDir>bin\$(Configuration)\</IntDir>
+    <ExecutablePath>$(SolutionDir);$(ExecutablePath)</ExecutablePath>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>exe\$(Configuration)</OutDir>
+    <IntDir>bin\$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;D3D_DEBUG_INFO;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <BrowseInformation>true</BrowseInformation>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;src/d3d9/dsound.lib;src/d3d9/d3d9.lib;src/d3d9/d3dx9.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName).exe</OutputFile>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <SubSystem>Console</SubSystem>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MinSpace</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;D3D_DEBUG_INFO;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling />
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <OpenMPSupport>false</OpenMPSupport>
+      <PrecompiledHeader />
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;src\d3d9\dsound.lib;src\d3d9\d3d9.lib;src\d3d9\d3dx9.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName).exe</OutputFile>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateDebugInformation>No</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <EntryPointSymbol>WinMainCRTStartup</EntryPointSymbol>
+      <NoEntryPoint>false</NoEntryPoint>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalOptions>/CRINKLER /COMPMODE:SLOW /HASHSIZE:150 /HASHTRIES:100 /ORDERTRIES:8 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="src\release\main_rel.asm">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">nasmw -f win32 -Xvc "%(RootDir)%(Directory)\%(Filename)%(Extension)" -o "$(IntDir)%(Filename).obj"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">nasmw -f win32 -Xvc "%(RootDir)%(Directory)\%(Filename)%(Extension)" -o "$(IntDir)%(Filename).obj"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="src\release\demo_rel.asm">
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Assembling %(Filename)%(Extension)...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">nasmw -f win32 -Xvc "%(RootDir)%(Directory)\%(Filename)%(Extension)" -o "$(IntDir)%(Filename).obj"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Assembling %(Filename)%(Extension)...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">nasmw -f win32 -Xvc "%(RootDir)%(Directory)\%(Filename)%(Extension)" -o "$(IntDir)%(Filename).obj"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">shader.nh;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <None Include="src\d3d9\d3dx9math.inl" />
+    <None Include="src\music.asm" />
+    <CustomBuild Include="src\synth.asm">
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Assembling %(Filename)%(Extension)...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">nasmw -f win32 -Xvc "%(RootDir)%(Directory)\%(Filename)%(Extension)" -o "$(IntDir)%(Filename).obj"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename).obj;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Assembling %(Filename)%(Extension)...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">nasmw -f win32 -Xvc "%(RootDir)%(Directory)\%(Filename)%(Extension)" -o "$(IntDir)%(Filename).obj"
+</Command>
+    </CustomBuild>
+    <None Include="src\synth_core.nh" />
+    <None Include="src\comcall.nh" />
+    <None Include="src\release\timeline.sync">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\idata.cpp" />
+    <ClCompile Include="src\debug\demo_deb.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\debug\main_deb.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\debug\sync.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\constants.h" />
+    <ClInclude Include="src\d3d9\d3d9.h" />
+    <ClInclude Include="src\d3d9\d3dx9.h" />
+    <ClInclude Include="src\d3d9\d3dx9anim.h" />
+    <ClInclude Include="src\d3d9\d3dx9core.h" />
+    <ClInclude Include="src\d3d9\d3dx9effect.h" />
+    <ClInclude Include="src\d3d9\d3dx9math.h" />
+    <ClInclude Include="src\d3d9\d3dx9mesh.h" />
+    <ClInclude Include="src\d3d9\d3dx9shader.h" />
+    <ClInclude Include="src\d3d9\d3dx9shape.h" />
+    <ClInclude Include="src\d3d9\d3dx9tex.h" />
+    <ClInclude Include="src\d3d9\d3dx9xof.h" />
+    <ClInclude Include="src\debug\sync.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\music.h" />
+    <ClInclude Include="src\synth.h" />
+    <ClInclude Include="src\comcall.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,416 @@
+;
+;                              Elevated
+;
+; Winner 4 kb intro of Breakpoint 2009, by TBC and RGBA 
+;
+;  . Music by Puryx (Christian Rønde)
+;  . Visuals by iq (Inigo Quilez)
+;  . Sound synthesizer and code optimization by Mentor (Rune L. H. Stubbe)
+;  . Crinkler compressor (http://www.crinkler.net)
+;
+; License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+;
+; Visual Studio 2015, Nasm, Crinkler
+
+global _WaveFormat
+global _WaveHdr
+global _random_seed
+global _sample_rate
+
+%define SAMPLE_RATE 44100
+%define NOTES_PER_ROW 16
+%define BYTES_PER_SAMPLE 2
+%define INSTRUMENT_SIZE ((9+3*3)*4)
+
+section realdata data align=4
+note_freq_start:	dd 1.749869973e-4			;8.175798916/SAMPLE_RATE	(C--5)
+note_freq_step: 	dd 1.029302237				;2^(1/24)   ;2^(1/12)
+cutoff_scale: 		dd 0x38150000					;dd 3.561896433e-5 			;pi/samplefreq*2
+final_scale:		dd 32767
+undenormalize:
+__real2:			dd 2.0
+_rand_scale: dd 0.000030517578125	;1/32768
+envelope_scales: 
+dd 1.0, -0.5, 0, -0.5, 
+dd 0, 0, 0, 0		;notestop
+
+section seed bss align=4
+_random_seed:
+resd 1
+
+;return value between [-1, 1]
+global _frandom@0
+section rand56 code align=1
+_frandom@0:
+	mov eax, dword [_random_seed]
+	imul eax, 16307
+	add eax, byte 17
+	mov [_random_seed], eax
+	shr eax, 14
+	push eax
+	fild word [esp]
+	fmul dword [_rand_scale]
+	pop eax
+	ret
+
+section	WaveForm data align=1
+_WaveFormat:
+	DW	01H            ; wFormatTag = WAVE_FORMAT_PCM
+	DW	2              ; nChannels
+_sample_rate:
+	DD	SAMPLE_RATE    ; nSamplesPerSec
+	DD	SAMPLE_RATE*4  ; nAvgBytesPerSec = nSamplesPerSec * wBitsPerSample * nChannels / 8
+	DW	4              ; nBlockAlign = wBitsPerSample * nChannels / 8
+	DW	16             ; wBitsPerSample
+	DW	0              ; cbSize
+
+section WaveHdr data align=4
+_WaveHdr:
+	DD _MusicBuffer
+	DD (TOTAL_SAMPLES*4)
+	DD	0,0,0,0,0,0
+
+;filter
+;---------------------------
+;float cutoff
+;float resonance
+;float lfo1_freq_step
+;float cos_1
+;float lfo2_freq_step
+;float cos_2
+;float dry
+;int filterType
+;---------------------------
+;local param block
+;float sin_1
+;float sin_2
+;float low
+;float high
+;float band
+;float low
+;float high
+;float band
+;---------------------------
+;ebp: filter definition
+;edi: stream
+;ecx: length
+section filtcod code align=1
+filter_machine:
+	pusha
+	.sampleloop:
+	;update LFO1
+	fld dword [ebx+0*4]		;sin_1
+	fmul dword [ebp+2*4]	;sin_1*freq_1
+	fsubr dword [ebp+3*4]	;cos_1-sin_1*freq_1
+	fst dword [ebp+3*4]		;cos_1=cos_1-sin_1*freq_1
+	fmul dword [ebp+2*4]	;cos_1*freq_1
+	fadd dword [ebx+0*4]	;sin_1+cos_1*freq_1
+	fst dword [ebx+0*4]		;sin_1=sin_1+cos_1*freq_1
+	
+	;update LFO2
+	fld dword [ebx+1*4]		;sin_2
+	fmul dword [ebp+4*4]	;sin_2*freq_2
+	fsubr dword [ebp+5*4]	;cos_2-sin_2*freq_2
+	fst dword [ebp+5*4]		;cos_2=cos_2-sin_2*freq_2
+	fmul dword [ebp+4*4]	;cos_2*freq_2
+	fadd dword [ebx+1*4]	;sin_2+cos_2*freq_2
+	fst dword [ebx+1*4]		;sin_2=sin_2+cos_2*freq_2
+	
+	faddp st1
+	fadd dword [ebp+0*4]	;+cutoff
+	fmul dword [cutoff_scale]
+	
+	;st0: cutoff
+
+	push ebx
+	.stereo_loop:
+
+	fld st0					;f
+	fmul dword [ebx+4*4]	;f*band
+	fadd dword [ebx+2*4]	;low + f*band
+	fstp dword [ebx+2*4]	;low = low + f*band
+	
+	fld dword [edi]			;input
+	fsub dword [ebx+4*4]	;input - band
+	fmul dword [ebp+1*4]	;resonance * (input - band)
+	fsub dword [ebx+2*4]	;resonance * (input - band) - low
+	fstp dword [ebx+3*4]	;high = resonance * (input - band) - low
+	
+	fld dword [ebx+3*4]		;high
+	fmul st1				;high * f
+	fadd dword [ebx+4*4]	;high * f + band
+	fadd dword [undenormalize]
+	fsub dword [undenormalize]
+	fstp dword [ebx+4*4]	;band = high * f + band
+	
+	mov eax, dword [ebp+7*4]
+	
+	fld dword [edi]				;input
+	fmul dword [ebp+6*4]		;dry*input
+	fadd dword [ebx+eax*4+2*4]	;wet
+								;st0: wet + dry*input
+	fstp dword [edi]
+	scasd
+	
+	add ebx, byte 12
+	test bl, byte 16		;loop once. assume alignment of >= 16
+	jz .stereo_loop
+	pop ebx
+	
+	fstp st0	;pop f	
+
+	loop .sampleloop
+	popa
+	add ebx, byte 8*4
+	add esi, byte 32
+ret
+
+;compressor_machine
+;---------------------------
+;float threshold
+;float ratio
+;float postadd
+;---------------------------
+;ebp: distort definition 
+;edi: stackptr
+;ecx: length
+section compress code align=1
+compressor_machine:
+	pusha
+	add ecx, ecx
+	.sampleloop:
+		mov ebx,dword [edi]
+		push ebx
+		fld dword [esp]
+		fabs
+    
+		fsub dword [ebp+0]
+		fldz
+		fcomip st1
+		ja .low_signal
+			fmul dword [ebp+4]
+			fadd dword [ebp+8]
+		.low_signal:
+		fadd dword [ebp+0]
+		fstp dword [esp]
+		pop eax
+		and ebx,0x80000000
+		or eax,ebx
+		stosd
+
+	loop .sampleloop
+	popa
+	add esi, byte 12
+ret
+
+;distortion_machine
+;---------------------------
+;float a
+;float b
+;---------------------------
+;ebp: distort definition 
+;edi: stackptr
+;ecx: length
+section distcode code align=1
+distortion_machine:
+	pusha
+	add ecx, ecx
+	.sampleloop:
+		fld dword [edi]
+		fld dword [ebp+0]
+		fpatan
+		fmul dword [ebp+4]
+		fstp dword [edi]
+		scasd
+	loop .sampleloop
+	popa
+	add esi, byte 8
+ret
+
+;distortion_machine2
+;---------------------------
+;float a
+;float b
+;---------------------------
+;ebp: distort definition 
+;edi: stackptr
+;ecx: length
+section distcod2 code align=1
+distortion_machine2:
+	pusha
+	add ecx, ecx
+	.sampleloop:
+		fld dword [edi]
+		fmul dword [ebp+0]
+		fsin
+		fmul dword [ebp+4]
+		fstp dword [edi]
+		scasd
+	loop .sampleloop
+	popa
+	add esi, byte 8
+ret
+
+
+;delay
+;---------------------------
+;int delay_pos
+;float delay_length
+;float feedback
+section delay code align=1
+delay:
+	pusha
+.sampleloop:
+	;update delay counter
+	
+	dec dword [ebp]
+	jns .not_stereo_swap
+		mov eax, dword [ebp+4]
+		add dword [ebp], eax
+	.not_stereo_swap:
+	mov eax, dword [ebp]
+	
+	fld dword [ebx+eax*8]		;wet
+	fmul dword [ebp+2*4]	;wet*feedback
+	;fadd dword [undenormalize]
+	;fsub dword [undenormalize]
+	fadd dword [edi]
+	fst dword [edi]
+	scasd
+	fld dword [ebx+eax*8+4]	;wet
+	fmul dword [ebp+2*4]
+	;fadd dword [undenormalize]
+	;fsub dword [undenormalize]
+	fadd dword [edi]
+	fst dword [edi]
+	scasd
+
+	fstp dword [ebx+eax*8]
+	fstp dword [ebx+eax*8+4]
+	
+	loop .sampleloop
+	popa
+	add ebx, MAX_DELAY_SAMPLES*8
+	add esi, byte 12
+ret
+
+;allpass
+;---------------------------
+;int delay_pos
+;float delay_length
+;float feedback
+section allpass code align=1
+allpass:
+	pusha
+	;shl ecx, byte 4
+
+.sampleloop:
+	;update delay counter
+	
+	dec dword [ebp]
+	jns .not_stereo_swap
+	mov eax, dword [ebp+1*4]
+	add dword [ebp], eax
+	.not_stereo_swap:
+	mov eax, dword [ebp]
+	
+	fld dword [ebx+eax*8]		;wet
+	fld dword [ebx+eax*8]		;wet
+	fmul dword [ebp+2*4]		;wet*feedback
+	;fadd dword [undenormalize]
+	;fsub dword [undenormalize]
+	fadd dword [edi+4]
+	fld dword [ebx+eax*8+4]		;wet
+	fld dword [ebx+eax*8+4]		;wet
+	fmul dword [ebp+2*4]		;wet*feedback
+	;fadd dword [undenormalize]
+	;fsub dword [undenormalize]
+	fadd dword [edi]
+	
+	fst dword [ebx+eax*8]
+	fmul dword [ebp+2*4]
+	fsubp st1
+	fstp dword [edi]
+	scasd
+	
+	fst dword [ebx+eax*8+4]
+	fmul dword [ebp+2*4]
+	fsubp st1
+	fstp dword [edi]
+	scasd
+	
+	loop .sampleloop
+	popa
+	add ebx, MAX_DELAY_SAMPLES*8
+	add esi, byte 12
+ret
+
+;mixer
+;---------------------------
+;float left_volume
+;float right_volume
+;---------------------------
+;ebp: mixer definition 
+;edi: stackptr
+;ecx: length
+section mixcode code align=1
+mixer_machine:
+	pusha
+	add ecx, ecx
+	mov esi, edi
+	sub edi, STACK_SAMPLES*8
+	
+	.mixloop:
+	fld dword [esi]
+	fmul dword [ebp+0*4]
+	fld dword [edi]
+	fmul dword [ebp+1*4]
+	faddp st1
+	fstp dword [edi]
+	
+	scasd
+	lodsd
+	loop .mixloop
+	
+	popa
+	sub edi, STACK_SAMPLES*8
+	add esi, byte 8
+ret
+
+section osc code align=1
+;st0: phase
+;eax: osc type
+osc:
+	movzx eax, byte [ebx+0]		;osc type
+	fadd dword [ebx+4]			;add phase shift
+	fld st0
+  	frndint
+  	fsubp st1
+  	fadd st0
+	;st0: phase in [-1,1] range
+
+	dec eax
+	jne .not_sine
+	
+	;sine
+	fldpi
+	fmulp st1
+	fsin
+
+.not_sine:
+	dec eax
+	jne .not_square
+	
+	fldz
+	fcomip st0, st1
+	fstp st0
+	fld1
+	jc .square_2
+	fchs
+	.square_2:
+	
+.not_square:	
+	;saw: done :)
+
+	;st0: osc
+ret

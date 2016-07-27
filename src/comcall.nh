@@ -1,0 +1,155 @@
+;
+;                              Elevated
+;
+; Winner 4 kb intro of Breakpoint 2009, by TBC and RGBA 
+;
+;  . Music by Puryx (Christian Rønde)
+;  . Visuals by iq (Inigo Quilez)
+;  . Sound synthesizer and code optimization by Mentor (Rune L. H. Stubbe)
+;  . Crinkler compressor (http://www.crinkler.net)
+;
+; License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+;
+; Visual Studio 2015, Nasm, Crinkler
+
+
+; Com functions
+
+; Common
+cc_Release				equ	2
+
+; ID3DXMesh
+cc_DrawSubset			equ 3
+cc_GetNumFaces			equ	4
+cc_GetNumVertices		equ	5
+cc_CloneMeshFVF			equ 11
+cc_LockVertexBuffer		equ	15
+cc_UnlockVertexBuffer	equ	16
+cc_LockIndexBuffer		equ	17
+cc_UnlockIndexBuffer	equ	18
+cc_GenerateAdjacency	equ	22
+cc_OptimizeInplace      equ 27
+
+; IDirect3DVolumeTexture9
+cc_LockBox				equ 19
+cc_UnlockBox			equ 20
+
+;surface
+cc_LockRect_Surface		equ 13
+cc_UnlockRect_Surface	equ 14
+
+; IDirect3DTexture9
+cc_GetSurfaceLevel		equ 18
+cc_LockRect				equ 19
+cc_UnlockRect			equ 20
+
+; IDirect3D9
+cc_CreateDevice			equ 16
+
+; IDirect3DDevice9
+cc_Present						equ 17
+cc_GetBackBuffer				equ 18
+cc_CreateTexture				equ 23
+cc_CreateVolumeTexture			equ 24
+cc_CreateCubeTexture			equ 25
+cc_CreateVertexBuffer			equ 26
+cc_CreateIndexBuffer			equ 27
+cc_CreateRenderTarget			equ 28
+cc_UpdateTexture				equ 31
+cc_StretchRect					equ 34
+cc_SetRenderTarget				equ 37
+cc_GetRenderTarget				equ 38
+cc_SetDepthStencilSurface		equ 39
+cc_GetDepthStencilSurface		equ 40
+cc_BeginScene					equ 41
+cc_EndScene						equ 42
+cc_Clear						equ 43
+cc_SetTransform					equ 44
+cc_SetViewport					equ 47
+cc_SetRenderState				equ 57
+cc_SetTexture					equ 65
+cc_SetSamplerState				equ 69
+cc_SetScissorRect				equ 75
+cc_DrawIndexedPrimitive			equ 82
+cc_DrawPrimitiveUP				equ 83
+cc_SetFVF						equ 89
+cc_CreateVertexShader			equ 91
+cc_SetVertexShader				equ 92
+cc_SetVertexShaderConstantF		equ 94
+cc_SetStreamSource				equ 100
+cc_SetIndices					equ 104
+cc_CreatePixelShader			equ 106
+cc_SetPixelShader				equ 107
+cc_SetPixelShaderConstantF		equ 109
+
+
+;ID3DXBuffer
+cc_GetBufferPointer				equ 3
+
+
+; ID3DXPRTEngine
+cc_ClosestRayIntersects	equ	34
+
+;ID3DXFont
+cc_DrawTextA					equ 14
+
+;ID3DXMatrixStack
+cc_Pop							equ 3
+cc_Push							equ 4
+cc_LoadIdentity					equ 5
+cc_Rotate						equ	11
+cc_RotateLocal					equ 12
+cc_Scale						equ 13
+cc_ScaleLocal					equ 14
+cc_Translate					equ 15
+cc_TranslateLocal				equ 16
+cc_GetTop						equ 17
+
+;LPD3DXEFFECT
+cc_Begin						equ 63
+cc_BeginPass					equ 64
+cc_EndPass						equ 66
+cc_EffectEnd					equ 67
+
+;ID3DXRenderToEnvMap
+cc_BeginCube					equ 5
+cc_Face							equ 9
+cc_End							equ 10
+
+;IDirect3DIndexBuffer9 / IDirect3DVertexBuffer9
+cc_Lock							equ 11
+cc_Unlock						equ 12
+
+;;Com handles
+ch_device				equ 0
+ch_dummy0				equ 4
+ch_vertexShader0		equ 8
+ch_dummy1				equ 12
+ch_pixelShader0			equ 16
+ch_dummy2				equ 20
+ch_pixelShader1			equ 24
+ch_dummy3				equ 28
+ch_pixelShader2			equ 32
+ch_dummy4				equ 36
+ch_pixelShader3			equ 40
+ch_tex0					equ 44
+ch_surf0				equ 48
+ch_tex1					equ 52
+ch_surf1				equ 56
+ch_camRenderTarget		equ 60
+ch_backbuffer			equ	64
+ch_mesh					equ 68
+
+	extern  _COMHandles
+
+%macro	comcall	2
+%ifnidni %1, eax
+	mov		eax, %1
+%endif
+	push	eax
+	mov		eax, [eax]
+	call	[dword eax + (cc_%2)*4]
+%endmacro
+
+
+%define	comhandle(a)	(_COMHandles + ch_ %+ a)
